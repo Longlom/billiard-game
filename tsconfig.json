@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "outDir": "./dist/",         // Directory where TypeScript will output .js files
+    "module": "esnext",          // Use ES module system (important for the browser)
+    "target": "es5",             // JavaScript version to compile to
+    "moduleResolution": "node",  // How modules will be resolved
+    "sourceMap": true,           // Generate source maps for easier debugging
+    "esModuleInterop": true,     // Enable interop between CommonJS and ES modules
+    "skipLibCheck": true         // Skip checking of .d.ts files in node_modules
+  },
+  "include": ["src/**/*"]        // Include all TypeScript files in the src folder
+}

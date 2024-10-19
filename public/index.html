@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Billiards</title>
+  </head>
+  <body>
+    <h1>Billiards Game</h1>
+    <canvas id="gameCanvas" width="800" height="400"></canvas>
+    <br />
+    <label for="angle">Angle: <span id="angleValue"></span> </label>
+    <br />
+    <input type="range" id="angle" min="0" max="360" value="0" />
+    <br />
+    <label for="force">Force: <span id="forceValue"></span> </label>
+    <br />
+    <input type="range" id="force" min="0" max="100" />
+    <button id="strike">Strike!</button>
+    <script src="/bundle.js"></script>
+  </body>
+</html>
