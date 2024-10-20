@@ -21,16 +21,14 @@ module.exports = {
     ],
   },
 
-  // Resolve extensions for TypeScript and JavaScript files
   resolve: {
     extensions: [ '.ts', '.js'],
   },
 
-  // Set up the development server (optional)
   devServer: {
-    static: './public', // Folder with HTML files
-    open: true,              // Open the browser after the server starts
-    port: 8080,              // Port to run the development server on
+    static: './public',
+    open: true,
+    port: 8080,
   },
   devtool: 'source-map',
 };

@@ -1,5 +1,6 @@
 import Ball from "./entities/ball";
 import Table from "./entities/table";
+import { isColliding, resolveCollision } from "./physics/collision";
 
 export type BilliardWorld = {
   canvas: HTMLCanvasElement;
@@ -12,68 +13,28 @@ const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
 const angleInput = document.getElementById("angle") as HTMLInputElement;
 const forceInput = document.getElementById("force") as HTMLInputElement;
 const strikeButton = document.getElementById("strike") as HTMLButtonElement;
+const hitBallCount = document.getElementById("hitBallCount") as HTMLDivElement;
+hitBallCount.textContent = "0";
 
-const table = new Table(800, 400, 10, "#006400");
-
+const table = new Table(800, 400, 10, "#006400", "#654321");
 const world: BilliardWorld = { canvas, table };
 
 const holes = [
-  { x: table.padding, y: table.padding, radius: 15 },
-  { x: canvas.width / 2, y: table.padding, radius: 15 },
-  { x: canvas.width - table.padding, y: table.padding, radius: 15 },
-  { x: table.padding, y: canvas.height - table.padding, radius: 15 },
-  { x: canvas.width / 2, y: canvas.height - table.padding, radius: 15 },
+  { x: table.padding, y: table.padding, radius: 20 },
+  { x: table.width / 2 + table.padding, y: table.padding, radius: 20 },
+  { x: table.width + table.padding, y: table.padding, radius: 20 },
+  { x: table.padding, y: table.height + table.padding + 2, radius: 20 },
   {
-    x: canvas.width - table.padding,
-    y: canvas.height - table.padding,
-    radius: 15,
+    x: table.width / 2 + table.padding,
+    y: table.height + table.padding + 2,
+    radius: 20,
+  },
+  {
+    x: table.width + table.padding,
+    y: table.height + table.padding,
+    radius: 20,
   },
 ];
-
-function isColliding(ball1: Ball, ball2: Ball) {
-  const dx = ball2.x - ball1.x;
-  const dy = ball2.y - ball1.y;
-  const distance = Math.sqrt(dx * dx + dy * dy);
-  return distance < ball1.radius + ball2.radius;
-}
-
-function resolveCollision(ball1: Ball, ball2: Ball) {
-  const xVelocityDiff = ball1.dx - ball2.dx;
-  const yVelocityDiff = ball1.dy - ball2.dy;
-
-  const xDistance = ball2.x - ball1.x;
-  const yDistace = ball2.y - ball1.y;
-
-  if (xVelocityDiff * xDistance + yVelocityDiff * yDistace >= 0) {
-    // Get angle of collision
-    const angle = -Math.atan2(ball2.y - ball1.y, ball2.x - ball1.x);
-
-    // Velocity before collision
-    const u1 = rotate({ x: ball1.dx, y: ball1.dy }, angle);
-    const u2 = rotate({ x: ball2.dx, y: ball2.dy }, angle);
-
-    // Velocity after collision (elastic collision equations)
-    const v1 = { x: u2.x, y: u1.y };
-    const v2 = { x: u1.x, y: u2.y };
-
-    // Final velocity after rotating axis back to original location
-    const vFinal1 = rotate(v1, -angle);
-    const vFinal2 = rotate(v2, -angle);
-
-    // Update velocities
-    ball1.dx = vFinal1.x;
-    ball1.dy = vFinal1.y;
-    ball2.dx = vFinal2.x;
-    ball2.dy = vFinal2.y;
-  }
-}
-
-function rotate(velocity: { x: number; y: number }, angle: number) {
-  return {
-    x: velocity.x * Math.cos(angle) - velocity.y * Math.sin(angle),
-    y: velocity.x * Math.sin(angle) + velocity.y * Math.cos(angle),
-  };
-}
 
 function createInitialBalls(startX: number, startY: number) {
   const balls: Ball[] = [];
@@ -125,11 +86,18 @@ const cueBall = new Ball(
   canvas.width / 2 - 250,
   canvas.height / 2,
   world,
-  "#FFFFFF"
+  "#000"
 );
 
 function drawTable() {
-  ctx.fillStyle = table.color;
+  ctx.fillStyle = table.borderColor;
+  ctx.fillRect(
+    0,
+    0,
+    table.width + table.padding * 2,
+    table.padding * 2 + table.height
+  );
+  ctx.fillStyle = table.tableColor;
   ctx.fillRect(table.padding, table.padding, table.width, table.height);
 }
 
@@ -137,7 +105,7 @@ function drawHoles() {
   holes.forEach((hole) => {
     ctx.beginPath();
     ctx.arc(hole.x, hole.y, hole.radius, 0, Math.PI * 2);
-    ctx.fillStyle = "#000000";
+    ctx.fillStyle = "#000";
     ctx.fill();
     ctx.closePath();
   });
@@ -162,10 +130,8 @@ function drawCueStick() {
   ctx.closePath();
 }
 
-// Check if all balls are stopped
 function areAllBallsStopped() {
-  const allBalls = [cueBall, ...balls];
-  return allBalls.every(
+  return [cueBall, ...balls].every(
     (ball) => Math.abs(ball.dx) < 0.01 && Math.abs(ball.dy) < 0.01
   );
 }
@@ -189,21 +155,22 @@ function update() {
     }
   }
 
-  // Check for pocketing
-  [cueBall, ...balls].forEach((ball) => {
+  allBalls.forEach((ball) => {
+    if (ball.isPocketed) {
+      return;
+    }
     if (isBallInHole(ball)) {
       ball.isPocketed = true;
       if (ball === cueBall) {
-        // Handle cue ball pocketing (reset position)
         resetCueBall();
+      } else {
+        hitBallCount.textContent = `${Number(hitBallCount.textContent) + 1}`;
       }
     }
   });
 
-  // Remove pocketed balls from the balls array
   balls = balls.filter((ball) => !ball.isPocketed);
 
-  // Only draw the cue when the balls are stationary
   if (areAllBallsStopped()) {
     drawCueStick();
     angleInput.disabled = false;
@@ -223,8 +190,8 @@ function strikeBall() {
   const force = Number(forceInput.value);
   const radians = (angle * Math.PI) / 180;
 
-  cueBall.dx = Math.cos(radians) * force * 0.1;
-  cueBall.dy = Math.sin(radians) * force * 0.1;
+  cueBall.dx = Math.cos(radians) * force * 0.25;
+  cueBall.dy = Math.sin(radians) * force * 0.25;
 
   requestAnimationFrame(gameLoop);
 }
@@ -237,7 +204,6 @@ function gameLoop() {
   }
 }
 
-// Check if a ball is in any hole
 function isBallInHole(ball: Ball) {
   for (const hole of holes) {
     const dx = ball.x - hole.x;
@@ -250,16 +216,15 @@ function isBallInHole(ball: Ball) {
   return false;
 }
 
-// Reset cue ball position
 function resetCueBall() {
   cueBall.x = canvas.width / 2 - 250;
   cueBall.y = canvas.height / 2;
   cueBall.dx = 0;
   cueBall.dy = 0;
   cueBall.isPocketed = false;
+  update();
 }
 
-// Event listeners
 strikeButton.addEventListener("click", strikeBall);
 
 angleInput.addEventListener("input", () => {
