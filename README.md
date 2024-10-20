@@ -2,4 +2,6 @@
 
 ## Start project
 
-`npm i && npm run start`
+1) `nvm use`
+
+2) `npm i && npm run start`

@@ -1,25 +1,26 @@
-import type { BilliardWorld } from "..";
+import { BilliardWorld } from "../game";
+import Point from "./point";
 import Table from "./table";
 
+export const EPSILON = 0.01
+
+const SPEED_DRAIN = 0.98;
+
 class Ball {
-  x: number;
-  y: number;
+  point: Point;
   radius: number = 10;
   dx: number = 0;
   dy: number = 0;
   color: string;
-  mass: number = 1;
   isPocketed: boolean = false;
   canvas: HTMLCanvasElement;
   table: Table;
   constructor(
-    x: number,
-    y: number,
+    point: Point,
     world: BilliardWorld,
     color: string = "#FFFFFF"
   ) {
-    this.x = x;
-    this.y = y;
+    this.point = point;
     this.color = color;
     this.canvas = world.canvas;
     this.table = world.table;
@@ -44,11 +45,11 @@ class Ball {
     this.x += this.dx;
     this.y += this.dy;
 
-    this.dx *= 0.98;
-    this.dy *= 0.98;
+    this.dx *= SPEED_DRAIN;
+    this.dy *= SPEED_DRAIN;
 
-    if (Math.abs(this.dx) < 0.01) this.dx = 0;
-    if (Math.abs(this.dy) < 0.01) this.dy = 0;
+    if (Math.abs(this.dx) < EPSILON) this.dx = 0;
+    if (Math.abs(this.dy) < EPSILON) this.dy = 0;
 
     if (
       this.x + this.radius > this.table.width + this.table.padding ||
@@ -74,6 +75,22 @@ class Ball {
     }
 
     this.draw();
+  }
+
+  get x() {
+    return this.point.x;
+  }
+
+  set x(newX: number) {
+    this.point.x = newX
+  }
+
+  get y() {
+    return this.point.y;
+  }
+
+  set y(newY: number) {
+    this.point.y = newY
   }
 }
 
