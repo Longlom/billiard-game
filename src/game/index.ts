@@ -94,13 +94,20 @@ const startGame: IStartGame = (
   const world: IBilliardWorld = { canvas, table };
 
   let balls: Ball[] = createInitialBalls(
-    canvas.width / 2 + INITIAL_BALL_TRIANGLE_OFFSET,
-    canvas.height / 2,
+    table.width / 2 + INITIAL_BALL_TRIANGLE_OFFSET,
+    table.height / 2 + table.padding,
     world
   );
 
+  const initialBallPosition = {
+    x: table.width / 2 - INITIAL_CUE_BALL_OFFSET,
+    y: table.height / 2 + table.padding,
+  };
   const cueBall = new Ball(
-    new Point(canvas.width / 2 - INITIAL_CUE_BALL_OFFSET, canvas.height / 2),
+    new Point(
+      initialBallPosition.x,
+      initialBallPosition.y,
+    ),
     world,
     "#000"
   );
@@ -179,8 +186,8 @@ const startGame: IStartGame = (
     }
 
     function resetCueBall() {
-      cueBall.x = canvas.width / 2 - INITIAL_CUE_BALL_OFFSET;
-      cueBall.y = canvas.height / 2;
+      cueBall.x = initialBallPosition.x;
+      cueBall.y = initialBallPosition.y;
       cueBall.dx = 0;
       cueBall.dy = 0;
       cueBall.isPocketed = false;
