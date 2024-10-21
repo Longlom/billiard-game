@@ -1,5 +1,8 @@
 # Simple billiard game using HTML5 + TypeScript
 
+## Project requirments
+Install nodejs
+Install nvm
 ## Start project
 
 1) `nvm use`
