@@ -15,10 +15,10 @@ export type IStartGame = (
 export type ICreateInitialBalls = (
   startX: number,
   startY: number,
-  world: BilliardWorld
+  world: IBilliardWorld
 ) => Ball[];
 
-export type BilliardWorld = {
+export type IBilliardWorld = {
   canvas: HTMLCanvasElement;
   table: Table;
 };
@@ -34,7 +34,7 @@ const FORCE_MULTIPLIER = 0.25;
 const createInitialBalls: ICreateInitialBalls = (
   startX: number,
   startY: number,
-  world: BilliardWorld
+  world: IBilliardWorld
 ) => {
   const balls: Ball[] = [];
   const spacing = 2 * 10 + 5;
@@ -91,7 +91,7 @@ const startGame: IStartGame = (
 ) => {
   const table = new Table(800, 400, 10, "#006400", "#654321");
   const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
-  const world: BilliardWorld = { canvas, table };
+  const world: IBilliardWorld = { canvas, table };
 
   let balls: Ball[] = createInitialBalls(
     canvas.width / 2 + INITIAL_BALL_TRIANGLE_OFFSET,

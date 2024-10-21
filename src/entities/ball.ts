@@ -1,4 +1,4 @@
-import { BilliardWorld } from "../game";
+import { IBilliardWorld } from "../game";
 import Point from "./point";
 import Table from "./table";
 
@@ -17,7 +17,7 @@ class Ball {
   table: Table;
   constructor(
     point: Point,
-    world: BilliardWorld,
+    world: IBilliardWorld,
     color: string = "#FFFFFF"
   ) {
     this.point = point;
